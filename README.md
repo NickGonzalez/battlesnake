@@ -17,3 +17,15 @@ Start the server..
 ```
 (battlesnake.server/run)
 ```
+
+Instructions for replit.com
+
+Install lein
+```
+wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+chmod +x lein
+./lein
+```
+
+Follow same instructions as before to start the repl and server.  A tab with the server
+URL will show up when the server starts.
