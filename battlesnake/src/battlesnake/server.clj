@@ -50,16 +50,21 @@
     (= dir :up) (up pt)
     (= dir :down) (down pt)))
 
+(defn move-dirs [pt]
+  [(right pt) (left pt) (up pt) (down pt)]
+)
+
 (defn can-move3? [you board dir]
   (let [pt (move-dir (:head you) dir)]
     (not (oob? pt (:height board 0) (:width board 0)))))
 
-(defn can-move? [you board dir]
+(defn can-move? [you board dir heads?]
   (let [pt (move-dir (:head you) dir)]
     (not (or (oob? pt (:height board 0) (:width board 0))
              (hit? pt (mapcat :body (remove #(= (:id you) (:id %))
                                             (:snakes board []))))
-             (hit? pt (:body you []))))))
+             (hit? pt (:body you []))
+             (hit? pt (heads []))))))
 
 (defn get-prev-move [id]
   (get-in @snakestate [id :prev]))
@@ -190,28 +195,30 @@
 
 (defn score-move-recursive3
   "Returns a score for this move."
-  [snake board max-depth dir]
+  [snake board max-depth dir heads]
   (let [valid-dir? (can-move? snake board dir)
         new-snake (if (has-food? (move-dir (:head snake) dir) board)
                     (update-health (move-snake snake dir true) board)
                     (update-health
-                     (move-snake snake dir false) board)) 
+                     (move-snake snake dir false) board))
+        new-heads (distinct (flatten (map move-dirs heads))) 
         depth (dec max-depth)]
+    (println new-heads)
     (cond
       (not valid-dir?) 0
       (zero? (:health new-snake 100)) 0 
       (zero? depth) (- 100 (:health new-snake 100))
       :else
-      (let [score (score-move-recursive2 new-snake board depth :right)]
+      (let [score (score-move-recursive3 new-snake board depth :right new-heads)]
         (if (> score 0)
           score
-          (let [score (score-move-recursive2 new-snake board depth :left)]
+          (let [score (score-move-recursive3 new-snake board depth :left new-heads)]
             (if (> score 0)
               score
-              (let [score (score-move-recursive2 new-snake board depth :down)]
+              (let [score (score-move-recursive3 new-snake board depth :down new-heads)]
                 (if (> score 0)
                   score
-                  (let [score (score-move-recursive2 new-snake board depth :up)]
+                  (let [score (score-move-recursive3 new-snake board depth :up new-heads)]
                     (if (> score 0)
                       score
                       0)))))))))))
@@ -230,11 +237,12 @@
         max-depth (if (nil? depth)
                     *max-depth*
                     depth)
+        heads (map (:head %) (:snakes board []))
         score score-move-recursive3]
-    {:up (score my-snake board max-depth :up)
-     :down (score my-snake board max-depth :down)
-     :right (score my-snake board max-depth :right)
-     :left (score my-snake board max-depth :left)}))
+    {:up (score my-snake board max-depth :up heads)
+     :down (score my-snake board max-depth :down heads)
+     :right (score my-snake board max-depth :right heads)
+     :left (score my-snake board max-depth :left heads)}))
 
 (defn think-clearly [snake board]
   (let [thoughts (think snake board)]
@@ -257,7 +265,7 @@
         id (get-in gamestate [:you :id])
         prev (get-prev-move id)
         thoughts (think (:you gamestate) (:board gamestate))
-        _ (println thoughts)
+        _ ;;(println thoughts)
         update-state-and-respond (fn [d]
                                    (set-prev-move! id d)
                                    (respond {:move d}))]
@@ -281,9 +289,9 @@
       (update-state-and-respond (rand-nth legal-moves)))))
 
 (defn move [req]
-  (println (:you (:body req)))
+  ;;(println (:you (:body req)))
   (let [resp (move-intently req)]
-    (println resp)
+    ;;(println resp)
     resp))
 
 (defroutes all-routes

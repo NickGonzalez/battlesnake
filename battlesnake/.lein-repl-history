@@ -1,1 +1,12 @@
 (battlesnake.server/run)
+(battlesnake.server/stop-server)
+(battlesnake.server/run)
+(battlesnake.server/stop-server)
+(battlesnake.server/run)
+(battlesnake.server/stop-server)
+(battlesnake.server/run)
+(battlesnake.server/stop-server)
+(battlesnake.server/run)
+(battlesnake.server/stop-server)
+(battlesnake.server/run)
+exit
