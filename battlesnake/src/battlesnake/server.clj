@@ -50,9 +50,28 @@
     (= dir :up) (up pt)
     (= dir :down) (down pt)))
 
-(defn move-dirs [pt]
-  [(right pt) (left pt) (up pt) (down pt)]
+(defn move-dirs [pt board]
+  (let [left-move (if
+          (not (oob? (left pt) (:height board 0) (:width board 0)))
+          (left pt)
+          [])
+        right-move (if
+          (not (oob? (right pt) (:height board 0) (:width board 0)))
+          (right pt)
+          [])
+        up-move (if
+          (not (oob? (up pt) (:height board 0) (:width board 0)))
+          (up pt)
+          [])
+        down-move (if
+          (not (oob? (down pt) (:height board 0) (:width board 0)))
+          (down pt)
+          [])]
+    (flatten [left-move right-move up-move down-move]))
 )
+
+(defn move-dirs-board [board]
+   (fn [pt] (move-dirs pt board)))
 
 (defn can-move3? [you board dir]
   (let [pt (move-dir (:head you) dir)]
@@ -236,8 +255,12 @@
                     (update-health (move-snake snake dir true) board)
                     (update-health
                      (move-snake snake dir false) board))
-        new-heads (if (>= (count heads) 12) (distinct (flatten (map move-dirs heads))) heads)
+        new-heads (if (< (count heads) 8)
+                    (distinct (concat
+                        (flatten (map (move-dirs-board board) heads)) heads))
+                    heads)
         depth (dec max-depth)]
+    (println "New heads")
     (println new-heads)
     (cond
       (not valid-dir?) 0

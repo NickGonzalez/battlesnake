@@ -77,3 +77,16 @@ exit
 (battlesnake.server/run)
 exit
 (battlesnake.server/run)
+exit
+(battlesnake.server/run)
+(battlesnake.server/stop-server)
+exit
+(battlesnake.server/stop-server)
+(battlesnake.server/run)
+exit
+(battlesnake.server/run)
+exit
+(battlesnake.server/run)
+exit
+(battlesnake.server/run)
+exit
